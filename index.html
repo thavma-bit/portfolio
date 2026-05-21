@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mirakle Gaase — Graphic Designer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,900;1,900&family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #080808;
+      --surface: #0f0f0f;
+      --line:    rgba(255,255,255,0.07);
+      --text:    #ede9e1;
+      --muted:   #555;
+      --faint:   #2a2a2a;
+      --gold:    #c8612a;
+      --gold-dim: rgba(200,97,42,0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* ── CURSOR ── */
+    #cur {
+      position: fixed;
+      width: 8px; height: 8px;
+      background: var(--gold);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%,-50%);
+      transition: width .2s, height .2s, opacity .2s;
+      mix-blend-mode: difference;
+    }
+    #cur.big { width: 40px; height: 40px; }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      inset: 0 0 auto 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 60px;
+      transition: background .4s, padding .4s;
+    }
+    nav.stuck {
+      background: rgba(8,8,8,.88);
+      backdrop-filter: blur(16px);
+      padding: 18px 60px;
+      border-bottom: 1px solid var(--line);
+    }
+    .logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -1px;
+    }
+    .logo b { color: var(--gold); font-style: italic; }
+    .nav-links {
+      display: flex; gap: 40px; list-style: none;
+    }
+    .nav-links a {
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--gold); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 60px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* background glow */
+    .hero-glow {
+      position: absolute;
+      width: 700px; height: 700px;
+      background: radial-gradient(ellipse, rgba(200,97,42,0.055) 0%, transparent 68%);
+      top: -80px; right: -100px;
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      font-size: 10px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      animation: up .9s .15s cubic-bezier(.16,1,.3,1) forwards;
+    }
+    .hero-eyebrow::before {
+      content: '';
+      width: 28px; height: 1px;
+      background: var(--gold);
+      opacity: .5;
+    }
+
+    .hero-name {
+      font-family: 'Playfair Display', serif;
+      font-weight: 900;
+      font-size: clamp(72px, 11vw, 160px);
+      line-height: .88;
+      letter-spacing: -4px;
+      margin-bottom: 48px;
+      opacity: 0;
+      animation: up .9s .3s cubic-bezier(.16,1,.3,1) forwards;
+    }
+    .hero-name em {
+      font-style: italic;
+      color: var(--gold);
+      display: block;
+    }
+
+    .hero-bottom {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      opacity: 0;
+      animation: up .9s .5s cubic-bezier(.16,1,.3,1) forwards;
+    }
+    .hero-desc {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.9;
+      max-width: 340px;
+    }
+    .hero-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+      color: var(--text);
+      text-decoration: none;
+      font-size: 11px;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      transition: gap .3s, color .2s;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--gold);
+    }
+    .hero-cta:hover { gap: 24px; color: var(--gold); }
+
+    /* scroll hint */
+    .scroll-hint {
+      position: absolute;
+      left: 60px; bottom: 84px;
+      display: flex; align-items: center; gap: 10px;
+      opacity: 0;
+      animation: up .9s 1s cubic-bezier(.16,1,.3,1) forwards;
+    }
+    .scroll-hint span {
+      font-size: 9px; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--muted);
+    }
+    .scroll-line-anim {
+      width: 40px; height: 1px;
+      background: linear-gradient(to right, var(--gold), transparent);
+      animation: linePulse 2s infinite;
+    }
+    @keyframes linePulse {
+      0%,100% { opacity:.3; transform:scaleX(1); }
+      50% { opacity:1; transform:scaleX(.6); }
+    }
+
+    /* ── TICKER ── */
+    .ticker {
+      border-top: 1px solid var(--line);
+      overflow: hidden;
+      padding: 14px 0;
+    }
+    .ticker-track {
+      display: flex; gap: 60px;
+      width: max-content;
+      animation: ticker 22s linear infinite;
+    }
+    .ticker-item {
+      display: flex; align-items: center; gap: 14px;
+      font-size: 10px; letter-spacing: 2.5px;
+      text-transform: uppercase; color: var(--muted);
+      white-space: nowrap;
+      font-family: 'DM Mono', monospace;
+    }
+    .ticker-item::before {
+      content: '◆';
+      font-size: 5px;
+      color: var(--gold);
+    }
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* ── SHARED ── */
+    .label {
+      font-size: 10px; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--gold);
+      font-family: 'DM Mono', monospace;
+      margin-bottom: 20px;
+    }
+    .big-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(40px, 5.5vw, 72px);
+      font-weight: 900;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: 60px;
+    }
+
+    .reveal {
+      opacity: 0; transform: translateY(36px);
+      transition: opacity .9s cubic-bezier(.16,1,.3,1), transform .9s cubic-bezier(.16,1,.3,1);
+    }
+    .reveal.on { opacity: 1; transform: none; }
+    .d1 { transition-delay: .1s; }
+    .d2 { transition-delay: .2s; }
+    .d3 { transition-delay: .3s; }
+    .d4 { transition-delay: .4s; }
+
+    /* ── WORK ── */
+    #work { padding: 120px 60px; }
+
+    .work-header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-bottom: 60px;
+    }
+    .work-header .big-title { margin-bottom: 0; }
+    .work-count {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; letter-spacing: 2px;
+      color: var(--muted);
+    }
+
+    /* grid */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 10px;
+    }
+
+    .cell {
+      position: relative;
+      overflow: hidden;
+      background: var(--surface);
+      border-radius: 4px;
+      cursor: none;
+    }
+    .cell::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: var(--gold-dim);
+      opacity: 0;
+      transition: opacity .4s;
+    }
+    .cell:hover::after { opacity: 1; }
+    .cell:hover .cell-img { transform: scale(1.04); }
+    .cell:hover .cell-info { opacity: 1; transform: none; }
+
+    .cell-a { grid-column: span 7; min-height: 500px; }
+    .cell-b { grid-column: span 5; min-height: 500px; }
+    .cell-c { grid-column: span 5; min-height: 300px; }
+    .cell-d { grid-column: span 7; min-height: 300px; }
+    .cell-e { grid-column: span 4; min-height: 280px; }
+    .cell-f { grid-column: span 4; min-height: 280px; }
+    .cell-g { grid-column: span 4; min-height: 280px; }
+
+    .cell-img {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform .7s cubic-bezier(.16,1,.3,1);
+    }
+    .cell-ph {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 10px;
+    }
+    .cell-ph-plus {
+      width: 36px; height: 36px;
+      border: 1px solid var(--faint);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; color: var(--muted); font-weight: 300;
+    }
+    .cell-ph span {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--faint);
+    }
+    .cell-info {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      padding: 28px 24px;
+      background: linear-gradient(to top, rgba(0,0,0,.85) 0%, transparent 100%);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .35s, transform .35s;
+      z-index: 2;
+    }
+    .cell-cat {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--gold);
+      margin-bottom: 5px;
+    }
+    .cell-name {
+      font-size: 17px; font-weight: 700;
+      letter-spacing: -0.5px; color: #fff;
+    }
+
+    /* ── SERVICES ── */
+    #services { padding: 120px 60px; border-top: 1px solid var(--line); }
+
+    .services-list { display: flex; flex-direction: column; }
+
+    .svc {
+      display: grid;
+      grid-template-columns: 80px 1fr 1fr auto;
+      align-items: center;
+      gap: 40px;
+      padding: 36px 0;
+      border-bottom: 1px solid var(--line);
+      transition: background .3s;
+      cursor: none;
+    }
+    .svc:first-child { border-top: 1px solid var(--line); }
+    .svc:hover { padding-left: 16px; }
+    .svc-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 13px; font-style: italic;
+      color: var(--muted);
+    }
+    .svc-name {
+      font-size: clamp(20px, 2.4vw, 30px);
+      font-weight: 800; letter-spacing: -1px;
+      transition: color .2s;
+    }
+    .svc:hover .svc-name { color: var(--gold); }
+    .svc-desc {
+      font-family: 'DM Mono', monospace;
+      font-size: 12px; color: var(--muted);
+      line-height: 1.7;
+    }
+    .svc-arrow {
+      font-size: 20px; color: var(--muted);
+      opacity: 0; transform: translateX(-8px);
+      transition: opacity .2s, transform .2s, color .2s;
+    }
+    .svc:hover .svc-arrow { opacity: 1; transform: none; color: var(--gold); }
+
+    /* ── ABOUT ── */
+    #about {
+      padding: 120px 60px;
+      border-top: 1px solid var(--line);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 100px;
+      align-items: center;
+    }
+    .about-photo {
+      aspect-ratio: 3/4;
+      background: var(--surface);
+      border-radius: 4px;
+      overflow: hidden;
+      position: relative;
+    }
+    .about-photo img { width: 100%; height: 100%; object-fit: cover; }
+    .about-photo-ph {
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 10px;
+    }
+    .about-photo-ph span {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--faint);
+    }
+    /* gold corner accent */
+    .about-photo::after {
+      content: '';
+      position: absolute;
+      bottom: 0; right: 0;
+      width: 60px; height: 60px;
+      border-bottom: 2px solid var(--gold);
+      border-right: 2px solid var(--gold);
+      opacity: .4;
+    }
+
+    .about-text .big-title { margin-bottom: 24px; }
+    .about-body {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px; color: var(--muted);
+      line-height: 2; margin-bottom: 16px;
+    }
+    .about-body em { color: var(--gold); font-style: italic; }
+
+    .about-nums {
+      display: flex; gap: 48px;
+      margin-top: 52px;
+      padding-top: 40px;
+      border-top: 1px solid var(--line);
+    }
+    .astat-n {
+      font-family: 'Playfair Display', serif;
+      font-size: 44px; font-weight: 900;
+      color: var(--gold); letter-spacing: -2px;
+      line-height: 1;
+    }
+    .astat-l {
+      font-family: 'DM Mono', monospace;
+      font-size: 9px; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--muted);
+      margin-top: 6px;
+    }
+
+    /* ── CONTACT ── */
+    #contact {
+      padding: 140px 60px 100px;
+      border-top: 1px solid var(--line);
+      text-align: center;
+    }
+    .contact-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(56px, 9vw, 120px);
+      font-weight: 900;
+      letter-spacing: -4px;
+      line-height: .9;
+      margin-bottom: 40px;
+    }
+    .contact-title em { font-style: italic; color: var(--gold); }
+    .contact-sub {
+      font-family: 'DM Mono', monospace;
+      font-size: 13px; color: var(--muted);
+      max-width: 400px; margin: 0 auto 60px;
+      line-height: 1.9;
+    }
+    .contact-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 48px; flex-wrap: wrap;
+    }
+    .contact-row a {
+      font-family: 'DM Mono', monospace;
+      font-size: 11px; letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color .2s;
+      padding-bottom: 4px;
+      border-bottom: 1px solid transparent;
+    }
+    .contact-row a:hover { color: var(--gold); border-color: var(--gold); }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 22px 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    footer span {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px; letter-spacing: 1.5px;
+      color: var(--muted);
+    }
+    footer b { color: var(--gold); font-weight: 400; }
+
+    /* ── KEYFRAMES ── */
+    @keyframes up {
+      from { opacity:0; transform: translateY(28px); }
+      to   { opacity:1; transform: none; }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 960px) {
+      nav, .hero, #work, #services, #about, #contact, footer {
+        padding-left: 24px; padding-right: 24px;
+      }
+      nav.stuck { padding-left: 24px; padding-right: 24px; }
+      .hero { padding-bottom: 60px; }
+      .scroll-hint { left: 24px; }
+      .cell-a, .cell-b, .cell-c, .cell-d,
+      .cell-e, .cell-f, .cell-g { grid-column: span 12; min-height: 260px; }
+      .svc { grid-template-columns: 40px 1fr; gap: 20px; }
+      .svc-desc, .svc-arrow { display: none; }
+      #about { grid-template-columns: 1fr; gap: 48px; }
+      .about-photo { display: none; }
+      .nav-links { display: none; }
+      footer { flex-direction: column; gap: 6px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cur"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="logo">MG<b>.</b></a>
+  <ul class="nav-links">
+    <li><a href="#work">Work</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+
+  <p class="hero-eyebrow">Graphic Designer · Makurdi, Nigeria</p>
+
+  <h1 class="hero-name">
+    Mirakle<br>
+    <em>Gaase</em>
+  </h1>
+
+  <div class="hero-bottom">
+    <p class="hero-desc">
+      Visual identities, church media,<br>
+      and brand stories — rooted in Tiv culture,<br>
+      driven by faith, shaped by purpose.
+    </p>
+    <a href="#work" class="hero-cta">Selected Work →</a>
+  </div>
+
+  <div class="scroll-hint">
+    <span>Scroll</span>
+    <div class="scroll-line-anim"></div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ticker-item">Brand Identity</span>
+    <span class="ticker-item">Church Media</span>
+    <span class="ticker-item">Poster Design</span>
+    <span class="ticker-item">Book Covers</span>
+    <span class="ticker-item">Social Media</span>
+    <span class="ticker-item">Logo Design</span>
+    <span class="ticker-item">Motion Graphics</span>
+    <span class="ticker-item">Adobe Photoshop</span>
+    <span class="ticker-item">Publishing</span>
+    <span class="ticker-item">Brand Identity</span>
+    <span class="ticker-item">Church Media</span>
+    <span class="ticker-item">Poster Design</span>
+    <span class="ticker-item">Book Covers</span>
+    <span class="ticker-item">Social Media</span>
+    <span class="ticker-item">Logo Design</span>
+    <span class="ticker-item">Motion Graphics</span>
+    <span class="ticker-item">Adobe Photoshop</span>
+    <span class="ticker-item">Publishing</span>
+  </div>
+</div>
+
+<!-- WORK -->
+<section id="work">
+  <div class="work-header reveal">
+    <div>
+      <p class="label">Selected Work</p>
+      <h2 class="big-title">Portfolio</h2>
+    </div>
+    <span class="work-count">12 Projects</span>
+  </div>
+
+  <!--
+  ╔═══════════════════════════════════════════════════╗
+  ║  ADD YOUR DESIGNS:                                ║
+  ║  Remove the .cell-ph block inside any cell,       ║
+  ║  then add:                                        ║
+  ║  <img class="cell-img" src="file.jpg" alt="..."> ║
+  ║  Update .cell-cat and .cell-name text too.        ║
+  ╚═══════════════════════════════════════════════════╝
+  -->
+
+  <div class="grid reveal d1">
+
+    <!-- Row 1 -->
+    <div class="cell cell-a">
+      <img class="cell-img" src="taking.png" alt="Taking Spoils">
+      <div class="cell-info">
+        <p class="cell-cat">Church Media</p>
+        <h3 class="cell-name">Taking Spoils — 2026</h3>
+      </div>
+    </div>
+
+    <div class="cell cell-b">
+      <img class="cell-img" src="4UR.jpg" alt="Birthday Design — Doose">
+      <div class="cell-info">
+        <p class="cell-cat">Personal Tribute</p>
+        <h3 class="cell-name">Birthday Design — Doose</h3>
+      </div>
+    </div>
+
+    <!-- Row 2 -->
+    <div class="cell cell-c">
+      <img class="cell-img" src="grat.jpg" alt="Gratitude">
+      <div class="cell-info">
+        <p class="cell-cat">Personal Branding</p>
+        <h3 class="cell-name">Gratitude</h3>
+      </div>
+    </div>
+
+    <div class="cell cell-d">
+      <img class="cell-img" src="BTYF.jpg" alt="Brothers' Thursday">
+      <div class="cell-info">
+        <p class="cell-cat">Church Media</p>
+        <h3 class="cell-name">Brothers' Thursday</h3>
+      </div>
+    </div>
+
+    <!-- Row 3 -->
+    <div class="cell cell-e">
+      <img class="cell-img" src="TNYYF.jpg" alt="The New You">
+      <div class="cell-info">
+        <p class="cell-cat">Church Media</p>
+        <h3 class="cell-name">The New You</h3>
+      </div>
+    </div>
+
+    <div class="cell cell-f">
+      <img class="cell-img" src="TSYF1.jpg" alt="True Story">
+      <div class="cell-info">
+        <p class="cell-cat">Podcast / Event</p>
+        <h3 class="cell-name">True Story</h3>
+      </div>
+    </div>
+
+    <div class="cell cell-g">
+      <img class="cell-img" src="riseup.jpg" alt="Rise Up and Eat">
+      <div class="cell-info">
+        <p class="cell-cat">Church Media</p>
+        <h3 class="cell-name">Rise Up and Eat</h3>
+      </div>
+    </div>
+
+    <!-- Row 4 -->
+    <div class="cell cell-d">
+      <img class="cell-img" src="DR_DAN_PF.jpg" alt="Dr. Daniel — Campaign">
+      <div class="cell-info">
+        <p class="cell-cat">Political Campaign</p>
+        <h3 class="cell-name">A New Voice for Gbemacha</h3>
+      </div>
+    </div>
+
+    <div class="cell cell-c">
+      <img class="cell-img" src="DR_DAN_PFT.jpg" alt="PVC Campaign">
+      <div class="cell-info">
+        <p class="cell-cat">Political Campaign</p>
+        <h3 class="cell-name">Get Your PVC</h3>
+      </div>
+    </div>
+
+    <!-- Row 5 -->
+    <div class="cell cell-e">
+      <img class="cell-img" src="PM_main.jpg" alt="Prudent Maidens">
+      <div class="cell-info">
+        <p class="cell-cat">Church / Social</p>
+        <h3 class="cell-name">Prudent Maidens</h3>
+      </div>
+    </div>
+
+    <div class="cell cell-f">
+      <img class="cell-img" src="Call_for_Support.jpg" alt="Call for Support">
+      <div class="cell-info">
+        <p class="cell-cat">Church / Social</p>
+        <h3 class="cell-name">Call for Support</h3>
+      </div>
+    </div>
+
+    <div class="cell cell-g">
+      <img class="cell-img" src="vl.jpg" alt="Graphic Design for Entrepreneurs">
+      <div class="cell-info">
+        <p class="cell-cat">Training / Education</p>
+        <h3 class="cell-name">Design for Entrepreneurs</h3>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="reveal">
+    <p class="label">What I Do</p>
+    <h2 class="big-title">Services</h2>
+  </div>
+  <div class="services-list">
+
+    <div class="svc reveal d1">
+      <span class="svc-num">01</span>
+      <h3 class="svc-name">Brand Identity</h3>
+      <p class="svc-desc">Logo systems, visual language, and brand guidelines that give organisations a clear, lasting presence.</p>
+      <span class="svc-arrow">→</span>
+    </div>
+
+    <div class="svc reveal d2">
+      <span class="svc-num">02</span>
+      <h3 class="svc-name">Church Media</h3>
+      <p class="svc-desc">Sermon graphics, event flyers, social kits, and screen visuals built for ministry impact.</p>
+      <span class="svc-arrow">→</span>
+    </div>
+
+    <div class="svc reveal d3">
+      <span class="svc-num">03</span>
+      <h3 class="svc-name">Print & Publishing</h3>
+      <p class="svc-desc">Book covers, posters, and layouts — print-ready, polished, backed by KDP publishing guidance.</p>
+      <span class="svc-arrow">→</span>
+    </div>
+
+    <div class="svc reveal d1">
+      <span class="svc-num">04</span>
+      <h3 class="svc-name">Social Media Design</h3>
+      <p class="svc-desc">Content templates and campaign visuals built for cohesion and engagement across platforms.</p>
+      <span class="svc-arrow">→</span>
+    </div>
+
+    <div class="svc reveal d2">
+      <span class="svc-num">05</span>
+      <h3 class="svc-name">Motion & Animation</h3>
+      <p class="svc-desc">Animated intros and motion content crafted with Pika Labs and Adobe Photoshop.</p>
+      <span class="svc-arrow">→</span>
+    </div>
+
+    <div class="svc reveal d3">
+      <span class="svc-num">06</span>
+      <h3 class="svc-name">AI-Powered Creativity</h3>
+      <p class="svc-desc">Anime-style characters, AI-assisted visuals, and innovation at the edge of faith and technology.</p>
+      <span class="svc-arrow">→</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-photo reveal">
+    <!--
+      Replace with your photo:
+      <img src="photo.jpg" alt="Mirakle Gaase">
+    -->
+    <img src="photo.jpg" alt="Mirakle Gaase">
+  </div>
+
+  <div class="about-text reveal d2">
+    <p class="label">About</p>
+    <h2 class="big-title">Faith.<br>Design.<br>Purpose.</h2>
+    <p class="about-body">
+      I'm Mirakle Gaase — a <em>Philosophy graduate</em> turned visual storyteller, based in Makurdi, Benue State, Nigeria. I design at the intersection of faith, culture, and technology — with a creative voice shaped by Tiv heritage and the gospel.
+    </p>
+    <p class="about-body">
+      My work spans brand identities, church media, book covers, and motion content. I'm also building tools that bring AI into ministry — from Bible projection systems to podcast infrastructure for gospel communities.
+    </p>
+    <p class="about-body"><em>Legally Miracle, creatively Mirakle — the 'k' is intentional.</em></p>
+    <div class="about-nums">
+      <div>
+        <div class="astat-n">5+</div>
+        <div class="astat-l">Years active</div>
+      </div>
+      <div>
+        <div class="astat-n">50+</div>
+        <div class="astat-l">Projects done</div>
+      </div>
+      <div>
+        <div class="astat-n">∞</div>
+        <div class="astat-l">Ideas brewing</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <p class="label reveal">Get In Touch</p>
+  <h2 class="contact-title reveal d1">
+    Let's <em>work</em><br>together.
+  </h2>
+  <p class="contact-sub reveal d2">
+    A brand, a book cover, a church media suite — whatever the project, let's make it matter.
+  </p>
+  <div class="contact-row reveal d3">
+    <!-- UPDATE with your real details -->
+    <a href="mailto:miraclegaase@gmail.com">miraclegaase@gmail.com</a>
+    <a href="https://wa.me/2348147722062" target="_blank">WhatsApp</a>
+    
+    
+    
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <span>© 2025 <b>Mirakle Gaase</b>. All rights reserved.</span>
+  <span>Makurdi · Nigeria</span>
+</footer>
+
+<script>
+  // Cursor
+  const cur = document.getElementById('cur');
+  document.addEventListener('mousemove', e => {
+    cur.style.left = e.clientX + 'px';
+    cur.style.top  = e.clientY + 'px';
+  });
+  document.querySelectorAll('a, .cell, .svc').forEach(el => {
+    el.addEventListener('mouseenter', () => cur.classList.add('big'));
+    el.addEventListener('mouseleave', () => cur.classList.remove('big'));
+  });
+
+  // Nav stick
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('stuck', window.scrollY > 50);
+  });
+
+  // Reveal on scroll
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); } });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+</script>
+
+</body>
+</html>
